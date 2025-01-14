@@ -153,6 +153,9 @@ def main(*argv):
                         help='Display PID of running process')
     parser.add_argument('-F', '--show-fan-speed', '--show-fan',
                         action='store_true', help='Display GPU fan speed')
+    parser.add_argument(
+        "-s", "--show-sm-clocks", action="store_true", help="Display GPU SM clocks"
+    )
     codec_choices = ['', 'enc', 'dec', 'enc,dec']
     parser.add_argument(
         '-e', '--show-codec', nargs='?', const='enc,dec', default='',

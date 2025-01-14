@@ -176,6 +176,15 @@ class GPUStat:
         """
         v = self.entry['utilization.dec']
         return int(v) if v is not None else None
+    
+    @property
+    def clock_sm(self) -> Optional[Percentage]:
+        """
+        Returns the GPU SM clock speed (in MHz),
+        or None if the information is not available.
+        """
+        v = self.entry['clocks.current.sm']
+        return int(v) if v is not None else None
 
     @property
     def power_draw(self) -> Optional[Percentage]:
@@ -210,6 +219,7 @@ class GPUStat:
                  show_fan_speed=None,
                  show_codec="",
                  show_power=None,
+                 show_sm_clocks=None,
                  gpuname_width=None,
                  eol_char=os.linesep,
                  term=None,
@@ -322,14 +332,17 @@ class GPUStat:
                 _write(_sep, "D: ", color=term.bold)
                 _write(rjustify(safe_self.utilization_dec, 3), " %", color='CUtilDec')
             _write(")")
-
+        if show_sm_clocks:
+            _write(",  ")
+            _write(rjustify(safe_self.clock_sm, 3), ' MHz', color='CPowU')
+             
         if show_power:
             _write(",  ")
             _write(rjustify(safe_self.power_draw, 3), color='CPowU')
             if show_power is True or 'limit' in show_power:
                 _write(" / ")
                 _write(rjustify(safe_self.power_limit, 3), ' W', color='CPowL')
-
+            
         # Memory
         _write(" | ")
         _write(rjustify(safe_self.memory_used, 5), color='CMemU')
@@ -537,6 +550,10 @@ class GPUStatCollection(Sequence[GPUStat]):
 
             utilization = safenvml(N.nvmlDeviceGetDecoderUtilization)(handle)
             gpu_info['utilization.dec'] = utilization[0] if utilization is not None else None
+            
+            # Clocks
+            clocks = safenvml(N.nvmlDeviceGetClockInfo)(handle, type=1)  # NVML_CLOCK_SM = 1
+            gpu_info['clocks.current.sm'] = clocks if clocks is not None else None
 
             # Power
             power = safenvml(N.nvmlDeviceGetPowerUsage)(handle)
@@ -652,7 +669,7 @@ class GPUStatCollection(Sequence[GPUStat]):
                         force_color=False, no_color=False,
                         show_cmd=False, show_full_cmd=False, show_user=False,
                         show_pid=False, show_fan_speed=None,
-                        show_codec="", show_power=None,
+                        show_codec="", show_power=None, show_sm_clocks=None,
                         gpuname_width=None, show_header=True,
                         no_processes=False,
                         eol_char=os.linesep,
@@ -713,6 +730,7 @@ class GPUStatCollection(Sequence[GPUStat]):
                        show_fan_speed=show_fan_speed,
                        show_codec=show_codec,
                        show_power=show_power,
+                       show_sm_clocks=show_sm_clocks,
                        gpuname_width=gpuname_width,
                        eol_char=eol_char,
                        term=t_color)

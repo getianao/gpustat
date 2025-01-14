@@ -23,6 +23,8 @@ Install from [PyPI][pypi_gpustat]:
 
 ```
 pip install gpustat
+pip install -e .
+pip install git+https://github.com/getianao/gpustat.git
 ```
 
 If you don't have root (sudo) privilege, please try installing `gpustat` on user namespace: `pip install --user gpustat`.
